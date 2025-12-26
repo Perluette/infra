@@ -39,3 +39,4 @@ terraform.rc
 *.img
 *.qcow2
 *.sha256
+*.sha512

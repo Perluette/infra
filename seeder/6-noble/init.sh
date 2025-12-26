@@ -1,13 +1,15 @@
 #!/bin/bash
 
-# https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img
+TRUSTED_STORE=../
+TRUSTED_BASE_IMAGE=noble-server-cloudimg-amd64.img
+BUILT_IMAGE_NAME=noble-server-cloudimg-amd64-k8s.qcow2
 
 rm -rf noble-server-cloudimg-amd64*
-cp ../noble-server-cloudimg-amd64.img ./noble-server-cloudimg-amd64.qcow2
+cp $TRUSTED_STORE$TRUSTED_BASE_IMAGE ./$BUILT_IMAGE_NAME
 
-qemu-img resize noble-server-cloudimg-amd64.qcow2 10G
+qemu-img resize $BUILT_IMAGE_NAME 10G
 
-virt-customize -a noble-server-cloudimg-amd64.qcow2 \
+virt-customize -a $BUILT_IMAGE_NAME \
   --run-command 'growpart /dev/sda 1' \
   --run-command 'resize2fs /dev/sda1' \
   --upload etc/ssh/sshd_config:/etc/ssh/sshd_config \
@@ -38,5 +40,5 @@ virt-customize -a noble-server-cloudimg-amd64.qcow2 \
   --run-command "cloud-init clean" \
   --run-command "truncate -s 0 /etc/machine-id"
 
-chmod 444 noble-server-cloudimg-amd64.qcow2
-sha256sum noble-server-cloudimg-amd64.qcow2 > noble-server-cloudimg-amd64.qcow2.sha256
+chmod 444 $BUILT_IMAGE_NAME
+sha256sum $BUILT_IMAGE_NAME > $BUILT_IMAGE_NAME.sha256
