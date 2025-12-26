@@ -14,6 +14,7 @@ virt-customize -a noble-server-cloudimg-amd64.qcow2 \
   --install podman,apt-transport-https,ca-certificates,qemu-guest-agent \
   --upload etc/containers/registries.conf:/etc/containers/registries.conf \
   --run-command 'systemctl enable qemu-guest-agent' \
+  --run-command "apt-get remove -y apparmor" \
   --run-command "mkdir -p /etc/apt/keyrings" \
   --run-command "curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.32/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-1-32-apt-keyring.gpg" \
   --run-command "curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.31/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-1-31-apt-keyring.gpg" \
