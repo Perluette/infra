@@ -58,7 +58,7 @@ find . -mindepth 2 -type f -name "*.qcow2" -print0 | sort -z | while IFS= read -
         continue
     fi
 
-    echo "Found Golden: $GOLDEN"
+    echo "💡 Found Golden: $GOLDEN"
     echo "Creating VM: $VM_NAME ($VM_ID)"
 
     [ "$DRY_RUN" = false ] && qm create "$VM_ID" \
@@ -67,31 +67,33 @@ find . -mindepth 2 -type f -name "*.qcow2" -print0 | sort -z | while IFS= read -
         --cores "$VM_CORES" \
         --net0 "$VM_NET" \
         --ostype l26 \
-        --agent 1
+        --agent 1 \
+        > /dev/null
 
     echo "Setting VM description"
-    [ "$DRY_RUN" = false ] && qm set "$VM_ID" --description "TODO"
+    [ "$DRY_RUN" = false ] && qm set "$VM_ID" --description "$( [ -f "$(dirname "$GOLDEN")/description.md" ] && <"$(dirname "$GOLDEN")/description.md" || echo No description supplied ! )" > /dev/null
 
     echo "Importing disk $GOLDEN"
     [ "$DRY_RUN" = false ] && qm importdisk "$VM_ID" "$GOLDEN" local-lvm > /dev/null
 
     echo "Setting HW options"
-    [ "$DRY_RUN" = false ] && qm set "$VM_ID" --scsihw virtio-scsi-pci --scsi0 local-lvm:vm-"$VM_ID"-disk-0
+    [ "$DRY_RUN" = false ] && qm set "$VM_ID" --scsihw virtio-scsi-pci --scsi0 local-lvm:vm-"$VM_ID"-disk-0 > /dev/null
 
     echo "Setting boot order"
-    [ "$DRY_RUN" = false ] && qm set "$VM_ID" --boot order=scsi0
+    [ "$DRY_RUN" = false ] && qm set "$VM_ID" --boot order=scsi0 > /dev/null
 
     echo "Setting cloud-init drive"
-    [ "$DRY_RUN" = false ] && qm set "$VM_ID" --ide2 local-lvm:cloudinit
+    [ "$DRY_RUN" = false ] && qm set "$VM_ID" --ide2 local-lvm:cloudinit > /dev/null
 
     echo "Setting cloud-init user/password"
     [ "$DRY_RUN" = false ] && qm set "$VM_ID" \
         --ciuser ubuntu \
         --cipassword ubuntu \
-        --ipconfig0 ip=dhcp
+        --ipconfig0 ip=dhcp \
+        > /dev/null
 
-    echo "Converting VM to template"
-    [ "$DRY_RUN" = false ] && qm template "$VM_ID"
+    echo "🏁 Converting VM to template"
+    [ "$DRY_RUN" = false ] && qm template "$VM_ID" > /dev/null
 
     echo
 done

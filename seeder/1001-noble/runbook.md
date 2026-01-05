@@ -1,6 +1,10 @@
 # Golden Kubernetes Image
 
-sudo kubeadm init --config kubeadm-config.yaml
+modprobe overlay
+modprobe br_netfilter
+reboot
+
+sudo kubeadm init --config kubeadm-config.yaml --upload-certs
 
 kubectl apply -f weave.yaml
 

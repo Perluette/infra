@@ -12,6 +12,7 @@ kind: ClusterConfiguration
 
 # Version Kubernetes
 kubernetesVersion: v1.32.5
+controlPlaneEndpoint: "vip.cluster.local:6443"
 
 # Réseau Pods / Services
 networking:
