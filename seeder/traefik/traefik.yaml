@@ -2,9 +2,7 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: ingress-system
-
 ---
-
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -17,14 +15,40 @@ metadata:
   name: traefik
 rules:
   - apiGroups: [""]
-    resources: ["services","endpoints","secrets"]
+    resources:
+      - services
+      - endpoints
+      - configmaps
+      - secrets
+      - nodes
+      - namespaces
     verbs: ["get","list","watch"]
-  - apiGroups: ["extensions","networking.k8s.io"]
+  - apiGroups: ["discovery.k8s.io"]
+    resources: ["endpointslices"]
+    verbs: ["get","list","watch"]
+  - apiGroups: ["networking.k8s.io"]
     resources: ["ingresses","ingressclasses"]
     verbs: ["get","list","watch"]
   - apiGroups: ["traefik.io"]
     resources: ["*"]
     verbs: ["get","list","watch"]
+  - apiGroups: ["gateway.networking.k8s.io"]
+    resources:
+      - gatewayclasses
+      - gateways
+      - httproutes
+      - grpcroutes
+      - backendtlspolicies
+      - referencegrants
+    verbs: ["get","list","watch"]
+  - apiGroups: ["gateway.networking.k8s.io"]
+    resources:
+      - gatewayclasses/status
+      - gateways/status
+      - httproutes/status
+      - grpcroutes/status
+      - backendtlspolicies/status
+    verbs: ["get","update","patch"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -38,21 +62,14 @@ subjects:
   - kind: ServiceAccount
     name: traefik
     namespace: ingress-system
-
-
 ---
-
 apiVersion: networking.k8s.io/v1
 kind: IngressClass
 metadata:
   name: traefik
 spec:
   controller: traefik.io/ingress-controller
-
-
 ---
-
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -93,33 +110,25 @@ spec:
               topologyKey: kubernetes.io/hostname
       containers:
         - name: traefik
-          image: traefik:v3.0
+          image: traefik:v3.6
           args:
-            # Kubernetes providers
-            - "--providers.kubernetescrd"
-            - "--providers.kubernetesingress"
-            - "--providers.kubernetesingress.ingressclass=traefik"
-
-            # EntryPoints
+            - "--providers.kubernetesgateway"
+            - "--log.level=INFO"
             - "--entrypoints.web.address=:80"
-
             - "--entrypoints.websecure.address=:443"
             - "--entrypoints.websecure.http.tls=true"
-
-            # Logs
-            - "--log.level=INFO"
             - "--accesslog=true"
-
-            # API (désactivée par défaut)
             - "--api.dashboard=false"
-
+            - "--metrics.prometheus=true"
+            - "--metrics.prometheus.addEntryPointsLabels=true"
+            - "--metrics.prometheus.addServicesLabels=true"
+            - "--global.sendAnonymousUsage=false"
           ports:
             - name: web
               containerPort: 80
-
-
+            - name: websecure
+              containerPort: 443
 ---
-
 apiVersion: v1
 kind: Service
 metadata:

@@ -141,3 +141,14 @@ kubectl delete -f traefik.yaml
 kubectl delete -f kubernetes-crd-definition-v1.yml
 ```
 
+-------------------------------------
+new release
+kubectl apply -f seeder/traefik/gateway-api-crd-definition-v1.4.1.yaml (kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.4.1/standard-install.yaml)
+
+kubectl apply -f seeder/traefik/gatewayclass-traefik.yaml
+
+```
+openssl genrsa -out traefik-generic.key 2048
+openssl req -x509 -new -nodes -key traefik-generic.key -out traefik-generic.crt -days 3650 -subj "/CN=traefik.local/O=internal"
+kubectl create secret tls traefik-generic --cert=traefik-generic.crt --key=traefik-generic.key -n ingress-system
+```
