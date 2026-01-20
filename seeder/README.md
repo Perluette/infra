@@ -52,3 +52,54 @@ qm set 9000 --ide2 local-lvm:cloudinit
 qm set 9000 --serial0 socket --vga serial0
 
 ```
+
+
+---
+
+
+
+| Port         | Protocole | Usage                                    |
+| ------------ | --------- | ---------------------------------------- |
+| **TCP 6783** | TCP       | **Contrôle Weave Net (peer control)**    |
+| **UDP 6783** | UDP       | **Données overlay (partie du datapath)** |
+| **UDP 6784** | UDP       | **Données overlay (secondaire)**         |
+
+
+| Port                | Protocole | Usage                                               |
+| ------------------- | --------- | --------------------------------------------------- |
+| **TCP 6443**        | TCP       | Kubernetes API (control-plane)                      |
+| **TCP 10250**       | TCP       | Kubelet API – santé / démarrage des containers      |
+| **TCP 30000-32767** | TCP/UDP   | NodePort Services (si tu en utilises)               |
+| **TCP 2379-2380**   | TCP       | etcd (entre control-planes ou control-plane ↔ etcd) |
+
+
+| Port                | Protocole | Usage                                                                                              |
+| ------------------- | --------- | -------------------------------------------------------------------------------------------------- |
+| **TCP 6781 / 6782** | TCP       | **Metrics / monitoring Weave Net** *(ouvrir uniquement si tu collectes des métriques entre hôtes)* |
+
+
+
+
+# Weave Net (overlay)
+TCP 6783 <-> ALL NODES
+UDP 6783 <-> ALL NODES
+UDP 6784 <-> ALL NODES
+
+# Kubernetes infra
+TCP 6443 <-> ALL NODES (API Server)
+TCP 10250 <-> ALL NODES (kubelet)
+TCP 30000-32767 <-> ALL NODES (NodePort, si utilisé)
+
+# Control-Plane only
+TCP 2379-2380 <-> etcd peers / control-plane
+
+
+---
+
+
+vmbr0	192.168.3.61	Home LAN
+vmbr1	192.168.1.253	Public WAN
+vmbr11	10.0.0.0/26	Front		[0-63]		1-50
+vmbr12	10.0.0.64/26	Middle		[64-127]	65-114
+vmbr13	10.0.0.128/26	Back		[128-191]	129-178
+vmbr14	10.0.0.192/26	Vault		[192-255]	193-242

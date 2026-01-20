@@ -39,6 +39,8 @@ spec:
   parentRefs:
     - name: traefik-gateway   # doit correspondre au nom de ton Gateway
       namespace: ingress-system
+  hostnames:
+    - "whoami.kubexperience.eu"
   rules:
     - matches:
         - path:
