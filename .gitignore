@@ -40,3 +40,5 @@ terraform.rc
 *.qcow2
 *.sha256
 *.sha512
+
+**/*.toencrypt
