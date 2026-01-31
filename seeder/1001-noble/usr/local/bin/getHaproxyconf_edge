@@ -1,0 +1,39 @@
+#!/bin/bash
+cat <<EOF
+global
+    log /dev/log local0
+    log /dev/log local1 notice
+    daemon
+    maxconn 2000
+    tune.ssl.default-dh-param 2048
+
+defaults
+    log     global
+    mode    tcp
+    option  tcplog
+    timeout connect 5s
+    timeout client  30s
+    timeout server  30s
+
+frontend k8s_edge_http
+    bind *:80
+    mode tcp
+    default_backend k8s_edge_backend_http
+
+frontend k8s_edge_https
+    bind *:443
+    mode tcp
+    default_backend k8s_edge_backend_https
+
+backend k8s_edge_backend_http
+    mode tcp
+    balance roundrobin
+    option tcp-check
+$(kubectl get nodes -o wide -l "node-role=edge" --no-headers | awk -F' ' '{print "    server "$1" "$6":30080 check"}')
+
+backend k8s_edge_backend_https
+    mode tcp
+    balance roundrobin
+    option tcp-check
+$(kubectl get nodes -o wide -l "node-role=edge" --no-headers | awk -F' ' '{print "    server "$1" "$6":30443 check"}')
+EOF

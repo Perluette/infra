@@ -24,7 +24,7 @@ kubectl taint nodes <nodenames> node-role=edge:NoExecute
 ## 3. Déploiement des CRDs Traefik
 Télécharger et appliquer la définition CRD air-gapped :
 ```
-kubectl apply -f kubernetes-crd-definition-v1.yml
+kubectl apply -f gateway-api-crd-definition-v1.4.1.yaml
 ```
 *Note*: CRD : `traefik.io/v1alpha1` pour IngressRoute et autres ressources dynamiques Traefik
 

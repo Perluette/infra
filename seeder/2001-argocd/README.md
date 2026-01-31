@@ -4,3 +4,6 @@ kubectl taint nodes <nodenames> node-role=argocd:NoExecute
 ```
 kubectl apply -f seeder/2001-argocd/crds/*.yaml
 kubectl apply -n argocd -f seeder/2001-argocd/argocd.yaml
+
+Change the fqdn in `seeder/2001-argocd/ingress.yaml` then :
+kubectl apply -n argocd -f seeder/2001-argocd/ingress.yaml

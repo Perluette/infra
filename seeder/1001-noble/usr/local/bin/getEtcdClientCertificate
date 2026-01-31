@@ -1,0 +1,8 @@
+#!/bin/bash
+if [ -z "$SIGNER_IP" ]; then
+    echo "[$(date '+%F %T')] ERROR: SIGNER_IP is unset !" >&2
+    exit 1
+fi
+ssh signer@$SIGNER_IP "get-certificate" > /etc/kubernetes/pki/etcd/ca.crt
+openssl req -new -newkey rsa:2048 -nodes -keyout /etc/kubernetes/pki/etcd/client.key -out /etc/kubernetes/pki/etcd/client.csr -subj "/CN=ignored"
+base64 < /etc/kubernetes/pki/etcd/client.csr | ssh signer@$SIGNER_IP "$HOSTNAME" > /etc/kubernetes/pki/etcd/client.crt

@@ -10,7 +10,7 @@ spec:
       namespace: ingress-system
       sectionName: http
   hostnames:
-    - argocd.kubexperience.eu
+    - argocd.caminade.fr
   rules:
     - filters:
         - type: RequestRedirect
@@ -29,7 +29,7 @@ spec:
       namespace: ingress-system
       sectionName: https
   hostnames:
-    - "argocd.kubexperience.eu"
+    - "argocd.caminade.fr"
   rules:
     - matches:
         - path:

@@ -1,0 +1,1 @@
+0 * * * * root sleep $(( $(hostname | cksum | awk '{print $1}') % 900 )) && getEtcdClientCertificate >> /var/log/rotate-etcd-cert.log 2>&1
