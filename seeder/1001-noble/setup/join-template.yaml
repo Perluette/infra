@@ -1,0 +1,23 @@
+---
+apiVersion: kubeadm.k8s.io/v1beta4
+discovery:
+  bootstrapToken:
+    apiServerEndpoint: ${TPL_DNS}:6443
+    token: ${TPL_TOKEN}
+    caCertHashes:
+      - ${TPL_CACERTHASHE}
+kind: JoinConfiguration
+nodeRegistration:
+  criSocket: unix:///var/run/containerd/containerd.sock
+  imagePullPolicy: IfNotPresent
+  imagePullSerial: true
+  name: ${TPL_HOSTNAME}
+  taints: null
+timeouts:
+  controlPlaneComponentHealthCheck: 4m0s
+  discovery: 5m0s
+  etcdAPICall: 2m0s
+  kubeletHealthCheck: 4m0s
+  kubernetesAPICall: 1m0s
+  tlsBootstrap: 5m0s
+  upgradeManifests: 5m0s

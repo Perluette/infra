@@ -1,0 +1,28 @@
+#!/bin/bash
+cat <<EOF
+global
+    log /dev/log local0
+    log /dev/log local1 notice
+    daemon
+    maxconn 2000
+    tune.ssl.default-dh-param 2048
+
+defaults
+    log     global
+    mode    tcp
+    option  tcplog
+    timeout connect 5s
+    timeout client  30s
+    timeout server  30s
+
+frontend k8s_api
+    bind *:6443
+    mode tcp
+    default_backend k8s_api_backend
+
+backend k8s_api_backend
+    mode tcp
+    balance roundrobin
+    option tcp-check
+$(kubectl get nodes -o wide -l "node-role.kubernetes.io/control-plane=" --no-headers | awk -F' ' '{print "    server "$1" "$6":6443 check"}')
+EOF

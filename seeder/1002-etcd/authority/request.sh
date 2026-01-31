@@ -6,7 +6,7 @@ umask 077
 
 CA_CERT="/etc/etcd/pki/ca.crt"
 CA_KEY="/etc/etcd/pki/ca.key"
-DAYS_VALID=14
+DAYS_VALID=1
 
 [ -f "$CA_CERT" ] || { echo "CA cert not found"; exit 1; }
 [ -f "$CA_KEY" ]  || { echo "CA key not found"; exit 1; }
@@ -14,6 +14,10 @@ DAYS_VALID=14
 MASTER_NAME="${SSH_ORIGINAL_COMMAND:-}"
 if [[ "$MASTER_NAME" == "get-certificate" ]]; then
     cat "$CA_CERT"
+    exit 0
+fi
+if [[ "$MASTER_NAME" == "get-peers" ]]; then
+    /usr/local/bin/etcdctl --endpoints=https://$(hostname -I | awk '{print $1}'):2379 --cacert=/etc/etcd/pki/ca.crt --cert=/etc/etcd/pki/server.crt --key=/etc/etcd/pki/server.key member list | awk -F', ' '{print $5}'
     exit 0
 fi
 if [[ ! "$MASTER_NAME" =~ ^kubemaster-[a-zA-Z0-9_-]+$ ]]; then
