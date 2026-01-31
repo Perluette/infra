@@ -1,57 +1,63 @@
-# Seeder
+# Seeder directory overview
 
-This step intends to create the base platform image. It consists in an Ubuntu cloud-init ready with Kubernetes pre-built.
+This directory contains the components and scripts used to build and prepare the virtual machine images that serve as the foundation for the platform.
+All images produced here are golden images, immutable by design, and rely on first-boot configuration to finalize instance-specific details.
 
-```
-wget https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img
-mv jammy-server-cloudimg-amd64.img jammy-server-cloudimg-amd64.qcow2
+The repository explicitly implements this model: images are built, versioned, and promoted; no configuration drift is expected; per-node initialization is handled at first boot.
 
-export LIBGUESTFS_BACKEND=direct LIBGUESTFS_DEBUG=1 LIBGUESTFS_TRACE=1
-qemu-img resize jammy-server-cloudimg-amd64.qcow2 10G
-                        qemu-img create -f qcow2 jammy-server-cloudimg-amd64-k8s-1.29.qcow2 10G
-                        sudo virt-resize -v -x --expand /dev/sda3 jammy-server-cloudimg-amd64.qcow2 jammy-server-cloudimg-amd64-k8s-1.29.qcow2
-                        rm -rf jammy-server-cloudimg-amd64.qcow2
-sudo virt-customize \
-  -a jammy-server-cloudimg-amd64-k8s-1.29.qcow2 \
-  --install ca-certificates,curl,gnupg,qemu-guest-agent \
-  --run-command "mkdir -p /etc/apt/keyrings" \
-  --run-command "curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes.gpg" \
-  --run-command "echo 'deb [signed-by=/etc/apt/keyrings/kubernetes.gpg] https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /' > /etc/apt/sources.list.d/kubernetes.list" \
-  --install kubelet,kubeadm,kubectl \
-  --run-command "apt-mark hold kubelet kubeadm kubectl" \
-  --run-command "systemctl disable kubelet" \
-  --write "/etc/licence.txt:Déployé par Toto" \
-  --hostname jammy-seed \
-  --run-command "cloud-init clean" \
-  --run-command "truncate -s 0 /etc/machine-id"
-chmod 444 jammy-server-cloudimg-amd64-k8s-1.29.qcow2
-sha256sum jammy-server-cloudimg-amd64-k8s-1.29.qcow2 > jammy-server-cloudimg-amd64-k8s-1.29.qcow2.sha256
-```
+## Image types
 
-# Proxmox deployment
-## Image copy
-```
-scp jammy-server-cloudimg-amd64-k8s-1.29.qcow2 root@proxmox:/root/
-```
+The seeder produces three types of images:
 
-## VM Template
-```
-qm create 9000 \
-  --name jammy-k8s-test \
-  --memory 2048 \
-  --cores 2 \
-  --net0 virtio,bridge=vmbr0 \
-  --ostype l26
+### 1. HAProxy image (Debian)
+- Provides load balancing for Kubernetes API servers and edge NodePort services.
+- Serves as a front for internal and external traffic.
+- Configuration baked in the image; runtime adjustments are minimal and handled through first-boot scripts when necessary.
 
-qm set 9000 --scsihw virtio-scsi-pci --scsi0 local-lvm:vm-9000-disk-0
+### 2. etcd image (Ubuntu)
+- Provides a dedicated etcd node for control-plane operations.
+- Ensures rolling upgrades and consistent cluster state management.
+- TLS certificates and other trust artifacts are baked into the image.
 
-qm set 9000 --boot order=scsi0
+### 3. Kubernetes node image (Ubuntu)
+- Base image for control-plane and worker nodes.
+- Versioned to align with the current Kubernetes release.
+- Includes OS-level, container runtime, and Kubernetes prerequisites.
 
-qm set 9000 --ide2 local-lvm:cloudinit
+## Deploying images
 
-qm set 9000 --serial0 socket --vga serial0
+A single script, deploy.sh, converts the qcow2 images generated in this directory into Proxmox VM templates.
+- Must be executed as root on the Proxmox host.
+- Produces templates ready to instantiate nodes according to their role (HAProxy, etcd, Kubernetes).
+- No further transformation or manual configuration is required on the templates themselves.
 
-```
+## Operational notes
+- All images are built, versioned, and promoted manually.
+- Operator is responsible for lifecycle management, upgrades, and any first-boot configuration.
+- This directory is not a general-purpose image factory.
+- It is not intended to run outside of the platform described in the root README.
+
+## Design philosophy
+The seeder follows three guiding principles:
+### 1. Golden images
+- All system components are encapsulated in versioned, reproducible images.
+- Every image represents a known good state of the system.
+
+### 2. Immutable infrastructure
+- Nodes are replaced, not modified in place.
+- Configuration drift is considered an operational issue.
+
+### 3. First-boot configuration
+- Instance-specific parameters (network addresses, cluster membership, node roles) are applied at first boot.
+- No node requires manual intervention post-deployment.
+
+This model ensures clarity, repeatability, and predictable operations, fully aligned with the platform’s enterprise-grade, solo-operated goals.
+
+## Limits and responsibilities
+- Seeder does not manage cluster configuration directly.
+- It does not include post-deployment configuration management beyond first-boot scripts.
+- Operator must understand the implications of immutable images and handle updates, upgrades, and promotions responsibly.
+- All outputs assume execution on the intended Proxmox environment.
 
 
 ---
