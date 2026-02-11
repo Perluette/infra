@@ -127,3 +127,6 @@ Match User signer
   PermitTTY no
   AllowTcpForwarding no
   X11Forwarding no
+  PermitTunnel no
+  MaxSessions 5
+  ClientAliveInterval 1

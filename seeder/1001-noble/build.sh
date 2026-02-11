@@ -36,7 +36,7 @@ virt-customize -a $BUILT_IMAGE_NAME \
   --upload setup/init-template.yaml:/root/setup/init-template.yaml \
   --upload setup/join-template.yaml:/root/setup/join-template.yaml \
   --upload setup/cluster-template.yaml:/root/setup/cluster-template.yaml \
-  --upload first-boot.sh:/root/first-boot.sh \
+  --upload setup/first-boot.sh:/root/setup/first-boot.sh \
   --upload usr/local/bin/getHaproxyconf_apiserver:/usr/local/bin/getHaproxyconf_apiserver \
   --upload usr/local/bin/getHaproxyconf_edge:/usr/local/bin/getHaproxyconf_edge \
   --upload usr/local/bin/getEtcdClientCertificate:/usr/local/bin/getEtcdClientCertificate \

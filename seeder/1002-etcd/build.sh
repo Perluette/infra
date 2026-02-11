@@ -12,9 +12,13 @@ virt-customize -a $BUILT_IMAGE_NAME \
   --run-command 'growpart /dev/sda 1' \
   --run-command 'resize2fs /dev/sda1' \
   --upload runbook.md:/root/runbook.md \
+  --upload .ssh/id_ed25519:/root/.ssh/id_ed25519 \
+  --run-command 'chmod 0600 /root/.ssh/id_ed25519' \
+  --upload .ssh/config:/root/.ssh/config \
   --run-command 'mkdir -p /root/setup /etc/etcd/pki /authority' \
   --upload setup/first-boot.sh:/root/setup/first-boot.sh \
   --upload authority/request.sh:/authority/request.sh \
+  --upload authority/runbook.md:/authority/runbook.md \
   --run-command 'useradd --system --create-home --shell /bin/sh --comment "etcd certificate signer" signer && mkdir -p /home/signer/.ssh' \
   --upload home/signer/.ssh/authorized_keys:/home/signer/.ssh/authorized_keys \
   --run-command 'chmod 640 /authority/request.sh && chmod +x /authority/request.sh && chown root:signer /authority/request.sh && chattr +i /authority/request.sh' \

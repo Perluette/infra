@@ -12,7 +12,7 @@ nodeRegistration:
   imagePullPolicy: IfNotPresent
   imagePullSerial: true
   name: ${TPL_HOSTNAME}
-  taints: null
+${TPL_TAINTS}
 timeouts:
   controlPlaneComponentHealthCheck: 4m0s
   discovery: 5m0s

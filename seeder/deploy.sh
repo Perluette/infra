@@ -33,7 +33,7 @@ done
 [ "$DRY_RUN" = true ] && echo "❗  Dry-run execution. This run is a simulation and will change no state of any file nor component." && echo
 [ -n "$LIMIT_VM_ID" ] && echo "❗  Limited exection : $LIMIT_VM_ID" && echo
 
-echo "Template description:"
+echo "Default template description:"
 echo "  - Memory  : $VM_MEM"
 echo "  - Cores   : $VM_CORES"
 echo "  - Network : $VM_NET"
